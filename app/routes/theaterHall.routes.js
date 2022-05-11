@@ -6,7 +6,4 @@ module.exports = function (app) {
   app.get("/api/theaterHall/:id", theaterHallController.getOneTheaterHall);
   app.put("/api/theaterHall/:id", theaterHallController.updateTheaterHall);
   app.delete("/api/theaterHall/:id", theaterHallController.deleteTheaterHall);
-
-  //Get seats of theater hall
-  app.get("/api/allAboutTheaterHall/:id", theaterHallController.getTheaterHall);
 };

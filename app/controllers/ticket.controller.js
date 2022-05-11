@@ -26,8 +26,30 @@ const addTicket = async (req, res) => {
 
 // 2.Get all tickets
 const getAllTickets = async (req, res) => {
-  let ticket = await Ticket.findAll({});
-  res.status(200).send(ticket);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let ticket = await Ticket.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: ticket.rows,
+    totalPages: Math.ceil(ticket.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single ticket

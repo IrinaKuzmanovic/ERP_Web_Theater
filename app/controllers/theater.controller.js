@@ -31,8 +31,30 @@ const addTheater = async (req, res) => {
 
 // 2.Get all theater
 const getAllTheaters = async (req, res) => {
-  let theater = await Theater.findAll({});
-  res.status(200).send(theater);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let theater = await Theater.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: theater.rows,
+    totalPages: Math.ceil(theater.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single theater

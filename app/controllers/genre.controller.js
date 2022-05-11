@@ -1,4 +1,5 @@
 const db = require("../models");
+const Op = db.Sequelize.Op;
 
 //Create main Model
 const Genre = db.genre;
@@ -19,16 +20,47 @@ const addGenre = async (req, res) => {
   console.log(genre);
 };
 
-// 2.Get all genre
+// 2.Get all genre and pagination
 const getAllGenre = async (req, res) => {
-  let genres = await Genre.findAll({});
-  res.status(200).send(genres);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let genres = await Genre.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: genres.rows,
+    totalPages: Math.ceil(genres.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single genre
+// Connect one to many relation Performance and Genre
 const getOneGenre = async (req, res) => {
   let id = req.params.id;
-  let genres = await Genre.findOne({ where: { id: id } });
+  let genres = await Genre.findOne({
+    include: [
+      {
+        model: Performance,
+        as: "performance",
+      },
+    ],
+    where: { id: id },
+  });
   res.status(200).send(genres);
 };
 
@@ -53,27 +85,10 @@ const deleteGenre = async (req, res) => {
   res.status(200).send(`Genre  with id ${id} is deleted!`);
 };
 
-// Connect one to many relation Performance and Genre
-const getGenrePerformance = async (req, res) => {
-  let id = req.params.id;
-
-  const data = await Genre.findOne({
-    include: [
-      {
-        model: Performance,
-        as: "performance",
-      },
-    ],
-    where: { id: id },
-  });
-  res.status(200).send(data);
-};
-
 module.exports = {
   addGenre,
   getAllGenre,
   getOneGenre,
   updateGenre,
   deleteGenre,
-  getGenrePerformance,
 };

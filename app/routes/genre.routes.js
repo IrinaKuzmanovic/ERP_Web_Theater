@@ -6,7 +6,4 @@ module.exports = function (app) {
   app.get("/api/genre/:id", genreController.getOneGenre);
   app.put("/api/genre/:id", genreController.updateGenre);
   app.delete("/api/genre/:id", genreController.deleteGenre);
-
-  //Get genres
-  app.get("/api/genrePerformances/:id", genreController.getGenrePerformance);
 };

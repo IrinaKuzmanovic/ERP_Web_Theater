@@ -29,15 +29,54 @@ const addPerformance = async (req, res) => {
 };
 
 // 2.Get all performances
+// Connect one to many relation Performance and Performer
 const getAllPerformances = async (req, res) => {
-  let performances = await Performance.findAll({});
-  res.status(200).send(performances);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let performances = await Performance.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: performances.rows,
+    totalPages: Math.ceil(performances.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single performance
 const getOnePerformance = async (req, res) => {
   let id = req.params.id;
-  let performance = await Performance.findOne({ where: { id: id } });
+  let performance = await Performance.findOne({
+    include: [
+      {
+        model: Performer,
+        as: "performer",
+      },
+      {
+        model: Theater,
+        as: "theater",
+      },
+      {
+        model: Reservation,
+        as: "reservation",
+      },
+    ],
+    where: { id: id },
+  });
   res.status(200).send(performance);
 };
 
@@ -64,35 +103,10 @@ const deletePerformance = async (req, res) => {
   res.status(200).send(`Performance  with id ${id} is deleted!`);
 };
 
-// Connect one to many relation Performance and Performer
-const getPerformance = async (req, res) => {
-  let id = req.params.id;
-
-  const data = await Performance.findAll({
-    include: [
-      {
-        model: Performer,
-        as: "performer",
-      },
-      {
-        model: Theater,
-        as: "theater",
-      },
-      {
-        model: Reservation,
-        as: "reservation",
-      },
-    ],
-    where: { id: id },
-  });
-  res.status(200).send(data);
-};
-
 module.exports = {
   addPerformance,
   getAllPerformances,
   getOnePerformance,
   updatePerformance,
   deletePerformance,
-  getPerformance,
 };

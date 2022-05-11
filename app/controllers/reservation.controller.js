@@ -26,14 +26,49 @@ const addReservation = async (req, res) => {
 
 // 2.Get all reservation
 const getAllReservation = async (req, res) => {
-  let reservation = await Reservation.findAll({});
-  res.status(200).send(reservation);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let reservation = await Reservation.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: reservation.rows,
+    totalPages: Math.ceil(reservation.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single reservation
+// Connect one to many relation reservation and seat
 const getOneReservation = async (req, res) => {
   let id = req.params.id;
-  let reservation = await Reservation.findOne({ where: { id: id } });
+  let reservation = await Reservation.findOne({
+    include: [
+      {
+        model: Seat,
+        as: "seat",
+      },
+      {
+        model: Ticket,
+        as: "ticket",
+      },
+    ],
+    where: { id: id },
+  });
   res.status(200).send(reservation);
 };
 
@@ -60,31 +95,10 @@ const deleteReservation = async (req, res) => {
   res.status(200).send(`Reservation  with id ${id} is deleted!`);
 };
 
-// Connect one to many relation reservation and seat
-const getReservation = async (req, res) => {
-  let id = req.params.id;
-
-  const data = await Reservation.findAll({
-    include: [
-      {
-        model: Seat,
-        as: "seat",
-      },
-      {
-        model: Ticket,
-        as: "ticket",
-      },
-    ],
-    where: { id: id },
-  });
-  res.status(200).send(data);
-};
-
 module.exports = {
   addReservation,
   getAllReservation,
   getOneReservation,
   updateReservation,
   deleteReservation,
-  getReservation,
 };

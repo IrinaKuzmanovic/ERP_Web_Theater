@@ -21,14 +21,45 @@ const addTheaterHall = async (req, res) => {
 
 // 2.Get all  theater hall
 const getAllTheaterHalls = async (req, res) => {
-  let theaterHall = await TheaterHall.findAll({});
-  res.status(200).send(theaterHall);
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
+
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
+  let theaterHall = await TheaterHall.findAndCountAll({
+    limit: size,
+    offset: page * size,
+  });
+  res.status(200).send({
+    content: theaterHall.rows,
+    totalPages: Math.ceil(theaterHall.count / Number.parseInt(size)),
+  });
 };
 
 // 3.Get single theater hall
+// Connect one to many relation theater hall and seat
 const getOneTheaterHall = async (req, res) => {
   let id = req.params.id;
-  let theaterHall = await TheaterHall.findOne({ where: { id: id } });
+  let theaterHall = await TheaterHall.findOne({
+    include: [
+      {
+        model: Seat,
+        as: "seat",
+      },
+    ],
+    where: { id: id },
+  });
   res.status(200).send(theaterHall);
 };
 
@@ -53,27 +84,10 @@ const deleteTheaterHall = async (req, res) => {
   res.status(200).send(`Theater hall with id ${id} is deleted!`);
 };
 
-// Connect one to many relation theater hall and seat
-const getTheaterHall = async (req, res) => {
-  let id = req.params.id;
-
-  const data = await TheaterHall.findAll({
-    include: [
-      {
-        model: Seat,
-        as: "seat",
-      },
-    ],
-    where: { id: id },
-  });
-  res.status(200).send(data);
-};
-
 module.exports = {
   addTheaterHall,
   getAllTheaterHalls,
   getOneTheaterHall,
   updateTheaterHall,
   deleteTheaterHall,
-  getTheaterHall,
 };
