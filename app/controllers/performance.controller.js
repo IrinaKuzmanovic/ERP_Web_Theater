@@ -1,10 +1,12 @@
 const db = require("../models");
+const Op = db.Sequelize.Op;
 
 // Create main Model
 const Performance = db.performance;
 const Performer = db.performer;
 const Theater = db.theater;
 const Reservation = db.reservation;
+const Ticket = db.ticket;
 
 // 1.Create performance
 // POST api/performance
@@ -33,6 +35,10 @@ const addPerformance = async (req, res) => {
 const getAllPerformances = async (req, res) => {
   const pageAsNumber = Number.parseInt(req.query.page);
   const sizeAsNumber = Number.parseInt(req.query.size);
+  const performanceName = String(req.query.performanceName);
+  /*  var condition = performanceName
+    ? { performanceName: { [Op.like]: `%${performanceName}%` } }
+    : null; */
 
   let page = 0;
   if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
@@ -47,7 +53,10 @@ const getAllPerformances = async (req, res) => {
   ) {
     size = sizeAsNumber;
   }
+
   let performances = await Performance.findAndCountAll({
+    //where: { condition },
+    order: [["performanceName", "desc"]],
     limit: size,
     offset: page * size,
   });
@@ -73,6 +82,10 @@ const getOnePerformance = async (req, res) => {
       {
         model: Reservation,
         as: "reservation",
+      },
+      {
+        model: Ticket,
+        as: "ticket",
       },
     ],
     where: { id: id },

@@ -5,6 +5,9 @@ var corsOptions = {
   origin: "http://localhost:8081",
 };
 
+//const stripe = require("stripe")(process.env.STRIPE_SECRET_TEST);
+const bodyParser = require("body-parser");
+
 //middleware
 app.use(cors(corsOptions));
 //app.use("/api/checkout");
@@ -24,6 +27,7 @@ require("./app/routes/theaterHall.routes")(app);
 require("./app/routes/seat.routes")(app);
 require("./app/routes/reservation.routes")(app);
 require("./app/routes/ticket.routes")(app);
+require("./app/routes/stripe.routes")(app);
 
 //database
 const db = require("./app/models");

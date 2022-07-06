@@ -14,6 +14,7 @@ const Ticket = db.ticket;
 const addTicket = async (req, res) => {
   let info = {
     reservationId: req.body.reservationId,
+    performanceId: req.body.performanceId,
     ticketPrice: req.body.ticketPrice,
     availability: req.body.availability,
     ticketNumber: req.body.ticketNumber,

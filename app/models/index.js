@@ -83,7 +83,16 @@ db.theater.belongsTo(db.performance, {
   foreignKey: "performanceId",
   as: "performance",
 });
+//one to many relation between performance and ticket
+db.performance.hasMany(db.ticket, {
+  foreignKey: "performanceId",
+  as: "ticket",
+});
 
+db.ticket.belongsTo(db.performance, {
+  foreignKey: "performanceId",
+  as: "performance",
+});
 //one to many relation between theater hall and seat
 db.theaterHall.hasMany(db.seat, {
   foreignKey: "theaterHallId",

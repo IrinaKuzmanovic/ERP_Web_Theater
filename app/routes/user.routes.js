@@ -21,5 +21,5 @@ module.exports = function (app) {
     controller.adminBoard
   );
 
-  // app.get("/api/users", controller.getUser);
+  app.get("/api/users", controller.getAllUsers);
 };

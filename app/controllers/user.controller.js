@@ -1,26 +1,35 @@
-/* const db = require("../models");
-
-//create main model
+const db = require("../models");
 const User = db.user;
 
-const Reservation = db.reservation;
+exports.getAllUsers = async (req, res) => {
+  const pageAsNumber = Number.parseInt(req.query.page);
+  const sizeAsNumber = Number.parseInt(req.query.size);
+  let page = 0;
+  if (!Number.isNaN(pageAsNumber) && pageAsNumber > 0) {
+    page = pageAsNumber;
+  }
 
-const getUser = async (req, res) => {
-  let id = req.params.id;
+  let size = 10;
+  if (
+    !Number.isNaN(sizeAsNumber) &&
+    !(sizeAsNumber > 10) &&
+    !(sizeAsNumber < 1)
+  ) {
+    size = sizeAsNumber;
+  }
 
-  const data = await User.findAll({
-    include: [
-      {
-        model: Reservation,
-        as: "reservation",
-      },
-    ],
-    where: { id: id },
+  let users = await User.findAndCountAll({
+    //where: { condition },
+    //order: [["performanceName", "desc"]],
+    limit: size,
+    offset: page * size,
   });
-  res.status(200).send(data);
+  res.status(200).send({
+    content: users.rows,
+    totalPages: Math.ceil(users.count / Number.parseInt(size)),
+  });
 };
 
-module.exports = { getUser }; */
 exports.allAccess = (req, res) => {
   res.status(200).send("Public Content.");
 };
